@@ -1,18 +1,29 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleContexts #-}
-module Unify where
+module Unify
+  ( mgu
+  , nullSubst
+  ) where
 
-import Types
+import           Types
 
-import qualified Data.Map as M
+import qualified Data.Map                   as M
+import           Control.Monad.Error
+import           Control.Monad.Identity
 
-import Control.Monad.Error
-import Control.Monad.Identity
-
-type Substs    = M.Map String Term
+type Substs = M.Map String Term
 
 nullSubst :: Substs
 nullSubst = M.empty
+
+apply :: Substs -> Term -> Term
+apply _ a@Atom{} = a
+apply substs (Var var) =
+    case M.lookup var substs of
+      Nothing -> Var var
+      Just t' -> t'
+apply substs (Compound fname terms) = Compound fname (map (apply substs) terms)
+apply _ VGen{} = error "VGen in apply"
 
 varBind :: Substs -> String -> Term -> Substs
 varBind substs var term =
@@ -38,13 +49,13 @@ unify' substs (Compound fName1 terms1) (Compound fName2 terms2)
       foldM unify_fold substs' (zip terms1 terms2)
       where
         unify_fold :: Substs -> (Term, Term) -> ErrorT MantiError Identity Substs
-        unify_fold ss (t1, t2) = unify' ss t1 t2
+        unify_fold ss (t1, t2) = unify' ss (apply ss t1) (apply ss t2)
 unify' _ VGen{} _ = error "VGen in unify."
 unify' _ _ VGen{} = error "VGen in unify."
 unify' _ t1 t2 = throwError $ UnificationError t1 t2
 
-unify'' :: MonadError MantiError m => Substs -> Term -> Term -> m Substs
-unify'' substs t1 t2 = either throwError return $ unify substs t1 t2
-
 unify :: Substs -> Term -> Term -> Either MantiError Substs
 unify substs t1 t2 = runIdentity (runErrorT (unify' substs t1 t2))
+
+mgu :: Substs -> Term -> Term -> Either MantiError Substs
+mgu substs t1 t2 = unify substs (apply substs t1) (apply substs t2)
