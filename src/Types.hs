@@ -34,7 +34,9 @@ data MantiState = MantiState { rules :: [ (RHead, RBody) ] }
 newtype Manti a = Manti { runManti :: StateT MantiState (ErrorT MantiError (VarGenT IO)) a }
     deriving (Functor, Applicative, Monad, MonadState MantiState, MonadError MantiError, MonadIO)
 
-data MantiError = ErrMsg String
+data MantiError
+    = ErrMsg String
+    | UnificationError Term Term
     deriving Show
 
 instance Error MantiError where
