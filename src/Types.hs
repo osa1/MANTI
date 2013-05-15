@@ -23,7 +23,7 @@ data Term
     | VGen Int
     deriving Show
 
-newtype VarGenT m a = VarGen { runVarGen :: StateT Int m a }
+newtype VarGenT m a = VarGenT { runVarGenT :: StateT Int m a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadTrans, MonadIO)
 
 type VarGen = VarGenT Identity
@@ -41,7 +41,7 @@ instance Error MantiError where
     strMsg = ErrMsg
 
 addRule :: (RHead, RBody) -> Manti ()
-addRule rule = modify (\s -> s { rules = rule:rules s })
+addRule rule = modify (\s -> s{ rules = rule:rules s })
 
 freshVar :: VarGen Int
 freshVar = do
