@@ -31,7 +31,10 @@ data MantiState = MantiState { rules :: [ Rule ], lastVar :: Int }
     deriving Show
 
 defaultMantiState :: MantiState
-defaultMantiState = MantiState{ rules = [], lastVar = 0 }
+defaultMantiState = MantiState{ rules = [oneTrueRule], lastVar = 0 }
+  where
+    oneTrueRule :: Rule
+    oneTrueRule = Rule (RHead (Atom "true") []) (RBody [])
 
 newtype Manti a = Manti { runManti :: StateT MantiState (ErrorT MantiError (VarGenT IO)) a }
     deriving (Functor, Applicative, Monad, MonadState MantiState, MonadError MantiError, MonadIO)
