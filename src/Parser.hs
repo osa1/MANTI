@@ -1,5 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
-module Parser where
+module Parser
+  ( term
+  , query
+  , rule
+  ) where
 
 import Text.Parsec
 import Text.Parsec.String
@@ -7,6 +11,9 @@ import Text.Parsec.String
 import Control.Applicative ((<*), (<$>), (<*>))
 
 import Types
+
+-- Helpers
+-- -------------------------------------------------------------------
 
 spStr :: String -> Parser String
 spStr s = string s <* spaces
@@ -17,9 +24,6 @@ spChar c = char c <* spaces
 atomRest :: Parser String
 atomRest = many $ oneOf $ concat [ ['a'..'z'], ['0'..'9'], "-_'" ]
 
-termList :: Parser [Term]
-termList = sepBy1 (term <* spaces) (spChar ',')
-
 parens :: Parser a -> Parser a
 parens p = do
     spChar '('
@@ -27,59 +31,55 @@ parens p = do
     spChar ')'
     return ret
 
-atom :: Parser String
+listOf :: Parser a -> Parser [a]
+listOf p = sepBy1 (p <* spaces) (spChar ',')
+
+-- -------------------------------------------------------------------
+
+atom :: Parser Atom
 atom = do
     f <- oneOf ['a'..'z']
     r <- atomRest
     spaces
-    return $ f : r
+    return $ Atom (f:r)
 
-var :: Parser String
+var :: Parser Var
 var = do
     f <- oneOf ['A'..'Z']
     r <- atomRest
     spaces
-    return $ f : r
+    return $ Var (f:r)
 
-compound :: Parser (String, [Term])
+compound :: Parser Compound
 compound = do
     functor <- atom
     spaces
-    terms <- parens termList
-    return (functor, terms)
+    terms <- parens $ listOf term
+    return $ Compound functor terms
 
-stat :: Parser Stat
-stat = choice
-    [ Query <$> try query
-    , Rule <$> rhead <*> rbody
-    ]
+query :: Parser Query
+query = Query <$> (compound <* spChar '?')
 
-rhead :: Parser RHead
-rhead = do
-    name <- atom
-    terms <- parens termList
-    return $ RHead name terms
+rule :: Parser Rule
+rule = Rule <$> rhead <*> rbody
+  where
+    rhead :: Parser RHead
+    rhead = do
+        name <- atom
+        terms <- parens $ listOf term
+        return $ RHead name terms
 
-rbody :: Parser RBody
-rbody = do
-    isFact <- optionMaybe (spChar '.')
-    case isFact of
-      Just _ -> return $ RBody [Atom "true"]
-      Nothing -> do
-        spStr ":-"
-        clauses <- termList
-        return $ RBody clauses
-
-query :: Parser Term
-query = do
-    name <- atom
-    terms <- parens termList
-    spChar '?'
-    return $ Compound name terms
+    rbody :: Parser RBody
+    rbody = do
+        isFact <- optionMaybe (spChar '.')
+        clauses <- case isFact of
+                     Just _  -> return [Compound (Atom "true") []]
+                     Nothing -> spStr ":-" >> (listOf compound <* spChar '.')
+        return (RBody clauses)
 
 term :: Parser Term
 term = choice
-    [ uncurry Compound <$> try compound
-    , Atom <$> try atom
-    , Var <$> var
+    [ TAtom <$> try atom
+    , TVar <$> try var
+    , TComp <$> compound
     ]
