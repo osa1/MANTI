@@ -13,8 +13,8 @@ data RBody = RBody [Compound]  deriving Show
 
 data Query = Query Compound deriving Show
 
-newtype Atom = Atom String deriving Show
-newtype Var  = Var  String deriving Show
+newtype Atom = Atom String deriving (Show, Eq, Ord)
+newtype Var  = Var  String deriving (Show, Eq, Ord)
 data Compound = Compound Atom [Term] deriving Show
 
 data Term
@@ -39,7 +39,8 @@ newtype Manti a = Manti { runManti :: StateT MantiState (ErrorT MantiError (VarG
 data MantiError
     = ErrMsg String
     | UnificationError Term Term
-    | UndefinedRule String Int
+    | UndefinedRule Atom Int
+    deriving Show
 
 instance Error MantiError where
     strMsg = ErrMsg
