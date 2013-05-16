@@ -3,6 +3,7 @@
 module Unify
   ( mgu
   , nullSubst
+  , apply
   , Substs
   ) where
 
@@ -17,14 +18,23 @@ type Substs = M.Map Var Term
 nullSubst :: Substs
 nullSubst = M.empty
 
-apply :: Substs -> Term -> Term
-apply _ a@TAtom{} = a
-apply substs (TVar var) =
-    case M.lookup var substs of
-      Nothing -> TVar var
-      Just t' -> t'
-apply substs (TComp (Compound fname terms)) = TComp (Compound fname (map (apply substs) terms))
-apply _ TVGen{} = error "VGen in apply"
+class Apply a where
+    apply :: Substs -> a -> a
+
+instance Apply Term where
+    apply _ a@TAtom{} = a
+    apply substs (TVar var) =
+        case M.lookup var substs of
+          Nothing -> TVar var
+          Just t' -> t'
+    apply substs (TComp (Compound fname terms)) = TComp (Compound fname (map (apply substs) terms))
+    apply _ TVGen{} = error "VGen in apply"
+
+instance Apply Compound where
+    apply substs (Compound fName args) = Compound fName (apply substs args)
+
+instance Apply a => Apply [a] where
+    apply substs l = map (apply substs) l
 
 varBind :: Substs -> Var -> Term -> Substs
 varBind substs var term =
