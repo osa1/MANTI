@@ -37,7 +37,7 @@ parens p = do
     return ret
 
 listOf :: Parser a -> Parser [a]
-listOf p = sepBy1 (p <* spaces) (spChar ',')
+listOf p = sepBy (p <* spaces) (spChar ',')
 
 -- -------------------------------------------------------------------
 
