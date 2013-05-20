@@ -3,14 +3,17 @@ module Parser
   ( term
   , query
   , rule
+  , toplevel
   , queryOrRule
+  , Toplevel(..)
+  , Cmd(..)
   ) where
 
 import Text.Parsec
 import Text.Parsec.String
 
 import Control.Applicative ((<*), (<$>), (<*>))
-import Control.Monad
+import Control.Monad (liftM)
 
 import Types
 
@@ -85,6 +88,26 @@ term = choice
     , TAtom <$> try atom
     , TVar <$> try var
     ]
+
+data Toplevel
+    = TRule Rule
+    | TQuery Query
+    | TCmd Cmd
+    deriving Show
+
+data Cmd
+    = Edit
+    deriving Show
+
+cmd :: Parser Cmd
+cmd = spStr "edit" >> return Edit
+
+toplevel :: Parser Toplevel
+toplevel = spaces >> choice
+  [ TCmd <$> (spChar ':' >> cmd)
+  , TQuery <$> try query
+  , TRule <$> rule
+  ]
 
 queryOrRule :: Parser (Either Query Rule)
 queryOrRule = liftM Left (try query) <|> liftM Right rule
