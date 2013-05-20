@@ -44,7 +44,7 @@ edit :: Manti ()
 edit = do
     tempDir <- liftIO $ getTemporaryDirectory
     (path, handle) <- liftIO $ openTempFile tempDir "temp.manti"
-    rls <- gets rules
+    rls <- liftM reverse $ gets rules
     liftIO $ do
       hPutStr handle (pprint rls)
       hFlush handle
