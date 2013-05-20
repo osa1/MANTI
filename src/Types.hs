@@ -15,14 +15,14 @@ data Query = Query Compound deriving Show
 
 newtype Atom = Atom String deriving (Show, Eq, Ord)
 newtype Var  = Var  String deriving (Show, Eq, Ord)
-data Compound = Compound Atom [Term] deriving Show
+data Compound = Compound Atom [Term] deriving (Show, Eq)
 
 data Term
     = TAtom Atom
     | TVar Var
     | TComp Compound
     | TVGen Int
-    deriving Show
+    deriving (Show, Eq)
 
 newtype VarGenT m a = VarGenT { runVarGenT :: StateT Int m a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadTrans, MonadIO)
@@ -43,7 +43,8 @@ data MantiError
     = ErrMsg String
     | UnificationError Term Term
     | UndefinedRule Atom Int
-    deriving Show
+    | OccursCheck
+    deriving (Show, Eq)
 
 instance Error MantiError where
     strMsg = ErrMsg
