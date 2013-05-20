@@ -3,12 +3,14 @@ module Parser
   ( term
   , query
   , rule
+  , queryOrRule
   ) where
 
 import Text.Parsec
 import Text.Parsec.String
 
 import Control.Applicative ((<*), (<$>), (<*>))
+import Control.Monad
 
 import Types
 
@@ -83,3 +85,6 @@ term = choice
     , TAtom <$> try atom
     , TVar <$> try var
     ]
+
+queryOrRule :: Parser (Either Query Rule)
+queryOrRule = liftM Left (try query) <|> liftM Right rule
