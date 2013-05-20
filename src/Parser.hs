@@ -79,7 +79,7 @@ rule = Rule <$> rhead <*> rbody
 
 term :: Parser Term
 term = choice
-    [ TAtom <$> try atom
+    [ TComp <$> try compound
+    , TAtom <$> try atom
     , TVar <$> try var
-    , TComp <$> compound
     ]
