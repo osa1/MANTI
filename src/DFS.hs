@@ -38,8 +38,7 @@ getMatchingRules (Compound fName args) = do
           Right ss' -> unifyArgs ss' t1r t2r
 
 concatNonEmpty :: [[Substs]] -> [Substs]
-concatNonEmpty [] = []
-concatNonEmpty (f:r) = filter (not . M.null) f ++ concatNonEmpty r
+concatNonEmpty r = foldr ((++) . filter (not . M.null)) [] r
 
 solve :: [Query] -> Manti [Substs]
 solve [] = return [nullSubst]

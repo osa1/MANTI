@@ -39,7 +39,7 @@ instance Apply Query where
     apply substs (Query c) = Query (apply substs c)
 
 instance Apply a => Apply [a] where
-    apply substs l = map (apply substs) l
+    apply substs = map (apply substs)
 
 occursCheck :: Var -> Term -> Bool
 occursCheck _ TAtom{} = False
