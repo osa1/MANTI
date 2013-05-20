@@ -5,6 +5,7 @@ module Unify
   , nullSubst
   , apply
   , Substs
+  , unionSubsts
   ) where
 
 import           Types
@@ -26,7 +27,7 @@ instance Apply Term where
     apply substs (TVar var) =
         case M.lookup var substs of
           Nothing -> TVar var
-          Just t' -> t'
+          Just t' -> apply substs t'
     apply substs (TComp (Compound fname terms)) = TComp (Compound fname (map (apply substs) terms))
     apply _ TVGen{} = error "VGen in apply"
 
@@ -36,10 +37,23 @@ instance Apply Compound where
 instance Apply a => Apply [a] where
     apply substs l = map (apply substs) l
 
-varBind :: Substs -> Var -> Term -> Substs
-varBind substs var term =
-    let substs' = M.mapWithKey (\key term' -> if key == var then term else term') substs
-     in M.insert var term substs'
+occursCheck :: Var -> Term -> Bool
+occursCheck _ TAtom{} = False
+occursCheck (Var v) (TVar (Var v'))
+  | v == v'   = True
+  | otherwise = False
+occursCheck v (TComp (Compound _ terms)) =
+    any (occursCheck v) terms
+occursCheck _ TVGen{} = False
+
+varBind :: Var -> Term -> Substs -> Either MantiError Substs
+varBind v t ss
+  | occursCheck v t = throwError OccursCheck
+  | otherwise       = Right $ M.insert v t ss
+
+
+unionSubsts :: Substs -> Substs -> Substs
+unionSubsts = M.foldWithKey varBind'
 
 functorName :: Atom -> Int -> String
 functorName (Atom s) i = s ++ "/" ++ show i
