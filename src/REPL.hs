@@ -48,7 +48,9 @@ edit = do
     liftIO $ do
       hPutStr handle (pprint rls)
       hFlush handle
-    void $ liftIO $ system $ "vim " ++ path
+    liftIO $ do
+      void $ system $ "vim " ++ path
+      hSeek handle AbsoluteSeek 0
     loadFileFromHandle handle
     liftIO $ do
       hClose handle
@@ -57,6 +59,7 @@ edit = do
 loadFileFromHandle :: Handle -> Manti ()
 loadFileFromHandle handle = do
     contents <- liftIO $ hGetContents handle
+    liftIO $ putStrLn contents
     loadFileFromString contents
 
 loadFileFromString :: String -> Manti ()
