@@ -3,13 +3,11 @@ module REPL where
 
 import Types
 import Parser
-import Unify
 
 import Text.Parsec (parse, (<|>), try, many)
 import Text.Parsec.String (Parser)
 
 import System.Environment (getArgs)
-import Data.Maybe (isJust)
 import Control.Monad.State
 import Control.Monad.Error
 import System.IO
@@ -47,9 +45,9 @@ mantiRepl = do
         mantiRepl
 
 runRule :: Rule -> Manti ()
-runRule rule = do
-    let rule' = generalize rule
-    addRule rule'
+runRule r = do
+    let r' = generalize r
+    addRule r'
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0
