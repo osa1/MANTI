@@ -4,16 +4,12 @@ module DFS where
 import Types
 import Unify
 
-import Data.Monoid
 import Data.Maybe
 import qualified Data.Map as M
 import Control.Monad
-import Control.Monad.Trans.Class
-import Control.Monad.Error (throwError)
 import Control.Monad.State (gets)
-import Control.Monad.IO.Class (liftIO)
 
-import Debug.Trace
+--import Debug.Trace
 
 getMatchingRules :: Compound -> Manti [(Rule, Substs)]
 --getMatchingRules c | trace ("getMatchingRule " ++ show c) False = undefined
@@ -28,7 +24,7 @@ getMatchingRules (Compound fName args) = do
   where
     lookupRules :: Atom -> Int -> [Rule] -> [Rule]
     lookupRules name arity =
-        filter (\(Rule (RHead fname args) _) -> name == fname && length args == arity)
+        filter (\(Rule (RHead fname rargs) _) -> name == fname && length rargs == arity)
 
     unifyArgs :: Substs -> [Term] -> [Term] -> Maybe Substs
     unifyArgs ss [] [] = Just ss
