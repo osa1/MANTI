@@ -33,9 +33,6 @@ getMatchingRules (Compound fName args) = do
           Left _ -> Nothing
           Right ss' -> unifyArgs ss' t1r t2r
 
-concatNonEmpty :: [[Substs]] -> [Substs]
-concatNonEmpty r = foldr ((++) . filter (not . M.null)) [] r
-
 solve :: [Query] -> Manti [Substs]
 solve [] = return [nullSubst]
 solve goals = do
