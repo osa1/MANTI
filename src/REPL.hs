@@ -8,7 +8,6 @@ import Print
 
 import Text.Parsec (parse, many)
 
-import System.Environment (getArgs)
 import System.Directory (getTemporaryDirectory, removeFile)
 import System.Cmd (system)
 import System.IO
@@ -77,11 +76,3 @@ loadFileFromString s = do
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0
-
-main :: IO ()
-main = do
-    args <- getArgs
-    r <- if not (null args)
-           then manti $ runFile (head args)
-           else manti repl
-    print r
