@@ -6,6 +6,7 @@ import Control.Monad.State
 import Control.Applicative
 import Control.Monad.Error
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 data Rule  = Rule RHead RBody  deriving Show
 data RHead = RHead Atom [Term] deriving Show
@@ -17,12 +18,32 @@ newtype Atom = Atom String deriving (Show, Eq, Ord)
 newtype Var  = Var  String deriving (Show, Eq, Ord)
 data Compound = Compound Atom [Term] deriving (Show, Eq)
 
+-- how to implement foldable instance for Term?
+-- it's mutually recursive structure(with compound) makes it harder
 data Term
     = TAtom Atom
     | TVar Var
     | TComp Compound
     | TVGen Int
     deriving (Show, Eq)
+
+class HasVar a where
+    vars :: a -> S.Set Var
+
+instance HasVar Term where
+    vars = iter S.empty
+      where
+        iter :: S.Set Var -> Term -> S.Set Var
+        iter acc TAtom{}    = acc
+        iter acc (TVar var) = S.insert var acc
+        iter acc (TComp c)  = acc `S.union` vars c
+        iter acc TVGen{}    = acc
+
+instance HasVar Compound where
+    vars (Compound _ terms) = S.unions $ map vars terms
+
+instance HasVar Query where
+    vars (Query c) = vars c
 
 newtype VarGenT m a = VarGenT { runVarGenT :: StateT Int m a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadTrans, MonadIO)

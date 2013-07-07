@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleContexts #-}
 module Unify
   ( nullSubst
+  , varSubsts
   , unify
   , apply
   , Substs
@@ -14,11 +15,25 @@ import           Types
 import qualified Data.Map                   as M
 import           Control.Monad.Error
 import           Control.Monad.Identity
+import qualified Data.Set as S
 
 type Substs = M.Map Var Term
 
 nullSubst :: Substs
 nullSubst = M.empty
+
+varSubsts :: S.Set Var -> Substs -> Substs
+varSubsts varSet substs = S.fold varS nullSubst varSet
+  where
+    varS :: Var -> Substs -> Substs
+    varS var ss = M.insert var (lastSubst var substs) ss
+
+    lastSubst :: Var -> Substs -> Term
+    lastSubst var ss =
+      case M.lookup var ss of
+        Nothing          -> TVar var
+        Just (TVar var') -> lastSubst var' ss
+        Just term        -> term
 
 class Apply a where
     apply :: Substs -> a -> a
