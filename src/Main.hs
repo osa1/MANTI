@@ -9,8 +9,7 @@ import           System.Environment (getArgs)
 main :: IO ()
 main = do
     args <- getArgs
-    r <- if not (null args)
-           then manti $ runFile (head args)
-           else manti repl
+    r <- manti $ if not (null args)
+                   then runFile (head args)
+                   else repl
     print r
-

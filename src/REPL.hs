@@ -32,7 +32,7 @@ repl = do
       Right (TQuery query') -> do
         let qvars = vars query'
         r <- solve [query']
-        liftIO $ putStrLn . show $ map (varSubsts qvars) r
+        liftIO $ print $ map (varSubsts qvars) r
         repl
       Right (TCmd Edit) -> edit >> repl
 
@@ -43,7 +43,7 @@ runRule r = do
 
 edit :: Manti ()
 edit = do
-    tempDir <- liftIO $ getTemporaryDirectory
+    tempDir <- liftIO getTemporaryDirectory
     (path, handle) <- liftIO $ openTempFile tempDir "temp.manti"
     rls <- liftM reverse $ gets rules
     liftIO $ do
@@ -68,14 +68,14 @@ loadFileFromString s = do
     put defaultMantiState
     case parse (many queryOrRule) "string" s of
       Left parseError -> liftIO $ print parseError
-      Right stats -> do
+      Right stats ->
         forM_ stats $ \stat ->
           case stat of
             Right rule' -> runRule rule'
             Left query' -> do
               let qvars = vars query'
               r <- solve [query']
-              liftIO $ putStrLn . show $ map (varSubsts qvars) r
+              liftIO $ print $ map (varSubsts qvars) r
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0

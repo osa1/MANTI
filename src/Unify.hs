@@ -28,7 +28,7 @@ varSubsts :: S.Set Var -> Substs -> Substs
 varSubsts varSet substs = S.fold varS nullSubst varSet
   where
     varS :: Var -> Substs -> Substs
-    varS var ss = M.insert var (lastSubst var substs) ss
+    varS var = M.insert var (lastSubst var substs)
 
     lastSubst :: Var -> Substs -> Term
     lastSubst var ss =
