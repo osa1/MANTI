@@ -1,10 +1,12 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Print where
 
 import           Types
 
 import           Data.List
+import qualified Data.Map  as M
 
 
 class PPrint a where
@@ -41,3 +43,9 @@ instance PPrint Term where
 instance PPrint Compound where
     pprint (Compound fName args) =
       concat [ pprint fName, "(", intercalate ", " (map pprint args), ")" ]
+
+instance PPrint (M.Map Var Term) where
+    pprint = intercalate ", " . M.foldWithKey foldfn []
+      where
+        foldfn :: Var -> Term -> [String] -> [String]
+        foldfn var term acc = acc ++ [ concat [ pprint var, " -> ", pprint term ] ]
