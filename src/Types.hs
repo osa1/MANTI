@@ -2,11 +2,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Types where
 
-import Control.Monad.State
-import Control.Applicative
-import Control.Monad.Error
-import qualified Data.Map as M
-import qualified Data.Set as S
+import           Control.Applicative
+import           Control.Monad.Error
+import           Control.Monad.State
+import qualified Data.Map            as M
+import qualified Data.Set            as S
+
 
 data Rule  = Rule RHead RBody  deriving Show
 data RHead = RHead Atom [Term] deriving Show

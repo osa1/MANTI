@@ -2,9 +2,10 @@
 {-# LANGUAGE MultiWayIf #-}
 module Print where
 
-import Types
+import           Types
 
-import Data.List
+import           Data.List
+
 
 class PPrint a where
     pprint :: a -> String

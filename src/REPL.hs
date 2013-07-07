@@ -1,19 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 module REPL where
 
-import Types
-import Parser
-import DFS
-import Print
-import Unify (varSubsts)
+import           DFS
+import           Parser
+import           Print
+import           Types
+import           Unify               (varSubsts)
 
-import Text.Parsec (parse, many)
+import           Text.Parsec         (many, parse)
 
-import System.Directory (getTemporaryDirectory, removeFile)
-import System.Cmd (system)
-import System.IO
-import Control.Monad.State
-import Control.Monad.Error
+import           Control.Monad.Error
+import           Control.Monad.State
+import           System.Cmd          (system)
+import           System.Directory    (getTemporaryDirectory, removeFile)
+import           System.IO
 
 
 runFile :: FilePath -> Manti ()

@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Unify
   ( nullSubst
   , varSubsts
@@ -12,10 +13,11 @@ module Unify
 
 import           Types
 
-import qualified Data.Map                   as M
 import           Control.Monad.Error
 import           Control.Monad.Identity
-import qualified Data.Set as S
+import qualified Data.Map               as M
+import qualified Data.Set               as S
+
 
 type Substs = M.Map Var Term
 

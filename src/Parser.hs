@@ -9,13 +9,13 @@ module Parser
   , Cmd(..)
   ) where
 
-import Text.Parsec
-import Text.Parsec.String
+import           Text.Parsec
+import           Text.Parsec.String
 
-import Control.Applicative ((<*), (<$>), (<*>))
-import Control.Monad (liftM)
+import           Control.Applicative ((<$>), (<*), (<*>))
+import           Control.Monad       (liftM)
 
-import Types
+import           Types
 
 -- Helpers
 -- -------------------------------------------------------------------

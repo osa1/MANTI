@@ -1,13 +1,12 @@
 {-# OPTIONS_GHC -Wall #-}
 module DFS where
 
-import Types
-import Unify
+import           Types
+import           Unify
 
-import Data.Maybe
-import qualified Data.Map as M
-import Control.Monad
-import Control.Monad.State (gets)
+import           Control.Monad
+import           Control.Monad.State (gets)
+import           Data.Maybe
 
 --import Debug.Trace
 

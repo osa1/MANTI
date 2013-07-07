@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -Wall #-}
 module Main where
 
-import REPL
+import           REPL
 
-import System.Environment (getArgs)
+import           System.Environment (getArgs)
+
 
 main :: IO ()
 main = do
