@@ -25,6 +25,7 @@ data Term
     = TAtom Atom
     | TVar Var
     | TComp Compound
+    | TInt Integer
     | TVGen Int
     deriving (Show, Eq)
 
@@ -38,6 +39,7 @@ instance HasVar Term where
         iter acc TAtom{}    = acc
         iter acc (TVar var) = S.insert var acc
         iter acc (TComp c)  = acc `S.union` vars c
+        iter acc TInt{}     = acc
         iter acc TVGen{}    = acc
 
 instance HasVar Compound where
@@ -90,10 +92,11 @@ instantiate = flip evalStateT M.empty . iter
       return $ Rule (RHead predName arggen) (RBody conjsgen)
 
     iterTerm :: Term -> StateT (M.Map Int String) Manti Term
-    iterTerm r@(TAtom{}) = return r
-    iterTerm r@(TVar{}) = return r
+    iterTerm r@TAtom{} = return r
+    iterTerm r@TVar{}  = return r
     iterTerm (TComp (Compound fName args)) =
       liftM (TComp . Compound fName) $ mapM iterTerm args
+    iterTerm r@TInt{}  = return r
     iterTerm (TVGen i) = do
       freshs <- get
       case M.lookup i freshs of
@@ -128,6 +131,7 @@ generalize = flip evalState M.empty . iter
           return $ TVGen size
     iterTerm (TComp (Compound fName args)) =
       liftM (TComp . Compound fName) $ mapM iterTerm args
+    iterTerm r@TInt{} = return r
     iterTerm TVGen{} = error "TVGen in iterTerm"
 
     iterComp :: Compound -> State (M.Map String Int) Compound

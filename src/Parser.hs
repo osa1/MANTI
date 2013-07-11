@@ -10,10 +10,12 @@ module Parser
   ) where
 
 import           Text.Parsec
-import           Text.Parsec.String
+import           Text.Parsec.Language (haskell)
+import           Text.Parsec.String   (Parser)
+import           Text.Parsec.Token    (integer)
 
-import           Control.Applicative ((<$>), (<*), (<*>))
-import           Control.Monad       (liftM)
+import           Control.Applicative  ((<$>), (<*), (<*>))
+import           Control.Monad        (liftM)
 
 import           Types
 
@@ -62,6 +64,9 @@ compound = do
     terms <- parens $ listOf term
     return $ Compound functor terms
 
+int :: Parser Integer
+int = integer haskell
+
 query :: Parser Query
 query = Query <$> (compound <* spChar '?')
 
@@ -70,13 +75,13 @@ rule = Rule <$> rhead <*> rbody
   where
     rhead :: Parser RHead
     rhead = do
-        name <- atom
+        name  <- atom
         terms <- parens $ listOf term
         return $ RHead name terms
 
     rbody :: Parser RBody
     rbody = do
-        isFact <- optionMaybe (spChar '.')
+        isFact  <- optionMaybe (spChar '.')
         clauses <- case isFact of
                      Just _  -> return [Compound (Atom "true") []]
                      Nothing -> spStr ":-" >> (listOf compound <* spChar '.')
@@ -87,6 +92,7 @@ term = choice
     [ TComp <$> try compound
     , TAtom <$> try atom
     , TVar <$> try var
+    , TInt <$> int
     ]
 
 data Toplevel

@@ -38,6 +38,7 @@ instance PPrint Term where
     pprint (TAtom a) = pprint a
     pprint (TVar v) = pprint v
     pprint (TComp comp) = pprint comp
+    pprint (TInt i) = show i
     pprint (TVGen i) = "_V" ++ show i
 
 instance PPrint Compound where

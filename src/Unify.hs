@@ -47,6 +47,7 @@ instance Apply Term where
           Nothing -> TVar var
           Just t' -> apply substs t'
     apply substs (TComp (Compound fname terms)) = TComp (Compound fname (map (apply substs) terms))
+    apply _ a@TInt{} = a
     apply _ TVGen{} = error "VGen in apply"
 
 instance Apply Compound where
@@ -65,6 +66,7 @@ occursCheck (Var v) (TVar (Var v'))
   | otherwise = False
 occursCheck v (TComp (Compound _ terms)) =
     any (occursCheck v) terms
+occursCheck _ TInt{} = False
 occursCheck _ TVGen{} = False
 
 varBind :: Var -> Term -> Substs -> Either MantiError Substs
