@@ -97,10 +97,17 @@ data Toplevel
 
 data Cmd
     = Edit
+    | Load FilePath
     deriving Show
 
 cmd :: Parser Cmd
-cmd = spStr "edit" >> return Edit
+cmd = choice [ editCmd, loadCmd ]
+
+editCmd :: Parser Cmd
+editCmd = spStr "edit" >> return Edit
+
+loadCmd :: Parser Cmd
+loadCmd = spStr "load" >> Load <$> many1 (noneOf "\n")
 
 toplevel :: Parser Toplevel
 toplevel = spaces >> choice

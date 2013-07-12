@@ -34,11 +34,10 @@ repl = do
         liftIO . putStrLn $ printSearchResults r qvars
         repl
       Right (TCmd Edit) -> edit >> repl
+      Right (TCmd (Load filePath)) -> runFile filePath >> repl
 
 runRule :: Rule -> Manti ()
-runRule r = do
-    let r' = generalize r
-    addRule r'
+runRule r = addRule (generalize r)
 
 edit :: Manti ()
 edit = do
@@ -51,6 +50,7 @@ edit = do
     liftIO $ do
       void $ system $ "vim " ++ path
       hSeek handle AbsoluteSeek 0
+    put defaultMantiState
     loadFileFromHandle handle
     liftIO $ do
       hClose handle
@@ -63,8 +63,7 @@ loadFileFromHandle handle = do
     loadFileFromString contents
 
 loadFileFromString :: String -> Manti ()
-loadFileFromString s = do
-    put defaultMantiState
+loadFileFromString s =
     case parse (many queryOrRule) "string" s of
       Left parseError -> liftIO $ print parseError
       Right stats ->
