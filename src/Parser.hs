@@ -12,7 +12,7 @@ module Parser
 import           Text.Parsec
 import           Text.Parsec.Language (haskell)
 import           Text.Parsec.String   (Parser)
-import           Text.Parsec.Token    (integer)
+import           Text.Parsec.Token    (integer, operator)
 
 import           Control.Applicative  ((<$>), (<*), (<*>))
 import           Control.Monad        (liftM)
@@ -59,7 +59,7 @@ var = do
 
 compound :: Parser Compound
 compound = do
-    functor <- atom
+    functor <- atom <|> (Atom <$> operator haskell)
     spaces
     terms <- parens $ listOf term
     return $ Compound functor terms

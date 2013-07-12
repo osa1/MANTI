@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 module DFS where
 
+import           Arith
 import           Types
 import           Unify
 
@@ -12,6 +13,10 @@ import           Data.Maybe
 
 getMatchingRules :: Compound -> Manti [(Rule, Substs)]
 --getMatchingRules c | trace ("getMatchingRule " ++ show c) False = undefined
+getMatchingRules (Compound (Atom "is") [lhs, rhs]) = do
+    rhs' <- evalArith rhs
+    substs <- unifyM nullSubst lhs rhs'
+    return [(Rule (RHead (Atom "trueRule") []) (RBody []), substs)]
 getMatchingRules (Compound fName args) = do
     rls <- gets rules
     let rls' = lookupRules fName (length args) rls

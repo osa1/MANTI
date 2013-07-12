@@ -5,6 +5,7 @@ module Unify
   ( nullSubst
   , varSubsts
   , unify
+  , unifyM
   , apply
   , Substs
   , unionSubsts
@@ -106,3 +107,6 @@ unify' _ t1 t2 = throwError $ UnificationError t1 t2
 
 unify :: Substs -> Term -> Term -> Either MantiError Substs
 unify substs t1 t2 = runIdentity (runErrorT (unify' substs t1 t2))
+
+unifyM :: Substs -> Term -> Term -> Manti Substs
+unifyM s t1 t2 = either throwError return $ unify s t1 t2
