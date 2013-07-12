@@ -1,12 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiWayIf        #-}
 module Print where
 
 import           Types
+import           Unify     (varSubsts, Substs)
 
 import           Data.List
 import qualified Data.Map  as M
+import qualified Data.Set  as S
 
 
 class PPrint a where
@@ -49,3 +51,7 @@ instance PPrint (M.Map Var Term) where
       where
         foldfn :: Var -> Term -> [String] -> [String]
         foldfn var term acc = acc ++ [ concat [ pprint var, " -> ", pprint term ] ]
+
+printSearchResults :: [Substs] -> S.Set Var -> String
+printSearchResults [] _ = "false"
+printSearchResults r vs = pprint $ map (varSubsts vs) r

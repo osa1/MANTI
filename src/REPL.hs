@@ -5,7 +5,6 @@ import           DFS
 import           Parser
 import           Print
 import           Types
-import           Unify               (varSubsts)
 
 import           Text.Parsec         (many, parse)
 
@@ -32,7 +31,7 @@ repl = do
       Right (TQuery query') -> do
         let qvars = vars query'
         r <- solve [query']
-        liftIO $ putStrLn . pprint $ map (varSubsts qvars) r
+        liftIO . putStrLn $ printSearchResults r qvars
         repl
       Right (TCmd Edit) -> edit >> repl
 
@@ -75,7 +74,7 @@ loadFileFromString s = do
             Left query' -> do
               let qvars = vars query'
               r <- solve [query']
-              liftIO $ putStrLn . pprint $ map (varSubsts qvars) r
+              liftIO . putStrLn $ printSearchResults r qvars
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0
