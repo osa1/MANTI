@@ -24,18 +24,24 @@ type Substs = M.Map Var Term
 nullSubst :: Substs
 nullSubst = M.empty
 
+normalizeTerm :: Substs -> Term -> Term
+normalizeTerm _ t@TAtom{} = t
+normalizeTerm ss (TVar var) = lastSubst var ss
+normalizeTerm ss (TComp (Compound a terms)) = TComp (Compound a (map (normalizeTerm ss) terms))
+normalizeTerm _ TVGen{} = error "VGen in normalizeTerm."
+
 varSubsts :: S.Set Var -> Substs -> Substs
 varSubsts varSet substs = S.fold varS nullSubst varSet
   where
     varS :: Var -> Substs -> Substs
-    varS var = M.insert var (lastSubst var substs)
+    varS var = M.insert var (normalizeTerm substs (TVar var))
 
-    lastSubst :: Var -> Substs -> Term
-    lastSubst var ss =
-      case M.lookup var ss of
-        Nothing          -> TVar var
-        Just (TVar var') -> lastSubst var' ss
-        Just term        -> term
+lastSubst :: Var -> Substs -> Term
+lastSubst var ss =
+  case M.lookup var ss of
+    Nothing          -> TVar var
+    Just (TVar var') -> lastSubst var' ss
+    Just term        -> normalizeTerm ss term
 
 class Apply a where
     apply :: Substs -> a -> a
@@ -70,7 +76,10 @@ occursCheck _ TVGen{} = False
 varBind :: Var -> Term -> Substs -> Either MantiError Substs
 varBind v t ss
   | occursCheck v t = throwError OccursCheck
-  | otherwise       = Right $ M.insert v t ss
+  | otherwise       = Right $ M.insert v t (M.map mapVals ss)
+    where
+      mapVals (TVar v') = if v == v' then t else TVar v'
+      mapVals t' = t'
 
 unionSubsts :: Substs -> Substs -> Either MantiError Substs
 unionSubsts s1 s2 = foldM (flip $ uncurry varBind) s1 (M.toList s2)
