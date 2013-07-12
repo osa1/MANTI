@@ -70,17 +70,17 @@ rule = Rule <$> rhead <*> rbody
   where
     rhead :: Parser RHead
     rhead = do
-        name <- atom
-        terms <- parens $ listOf term
-        return $ RHead name terms
+      name <- atom
+      terms <- parens $ listOf term
+      return $ RHead name terms
 
     rbody :: Parser RBody
     rbody = do
-        isFact <- optionMaybe (spChar '.')
-        clauses <- case isFact of
-                     Just _  -> return [Compound (Atom "true") []]
-                     Nothing -> spStr ":-" >> (listOf compound <* spChar '.')
-        return (RBody clauses)
+      isFact <- optionMaybe (spChar '.')
+      clauses <- case isFact of
+                   Just _  -> return [Compound (Atom "true") []]
+                   Nothing -> spStr ":-" >> (listOf compound <* spChar '.')
+      return (RBody clauses)
 
 term :: Parser Term
 term = choice

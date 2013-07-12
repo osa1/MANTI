@@ -52,6 +52,6 @@ instance PPrint (M.Map Var Term) where
         foldfn :: Var -> Term -> [String] -> [String]
         foldfn var term acc = acc ++ [ concat [ pprint var, " -> ", pprint term ] ]
 
-printSearchResults :: [Substs] -> S.Set Var -> String
-printSearchResults [] _ = "false"
-printSearchResults r vs = pprint $ map (varSubsts vs) r
+printResults :: [Substs] -> S.Set Var -> String
+printResults [] _ = "false"
+printResults r vs = pprint $ map (varSubsts vs) r

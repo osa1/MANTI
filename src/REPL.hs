@@ -31,7 +31,7 @@ repl = do
       Right (TQuery query') -> do
         let qvars = vars query'
         r <- solve [query']
-        liftIO . putStrLn $ printSearchResults r qvars
+        liftIO . putStrLn $ printResults r qvars
         repl
       Right (TCmd Edit) -> edit >> repl
       Right (TCmd (Load filePath)) -> runFile filePath >> repl
@@ -73,7 +73,7 @@ loadFileFromString s =
             Left query' -> do
               let qvars = vars query'
               r <- solve [query']
-              liftIO . putStrLn $ printSearchResults r qvars
+              liftIO . putStrLn $ printResults r qvars
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0
