@@ -11,6 +11,8 @@ module Parser
 
 import           Text.Parsec
 import           Text.Parsec.String
+import           Text.Parsec.Language (haskell)
+import           Text.Parsec.Token    (natural)
 
 import           Control.Applicative ((<$>), (<*), (<*>))
 import           Control.Monad       (liftM)
@@ -62,6 +64,23 @@ compound = do
     terms <- parens $ listOf term
     return $ Compound functor terms
 
+list :: Parser Term
+list = do
+    spChar '['
+    terms <- term `sepBy` spChar ','
+    spChar ']'
+    return $ foldr mkList (TAtom $ Atom "nil") terms
+  where
+    mkList :: Term -> Term -> Term
+    mkList t1 t2 = TComp $ Compound (Atom "#cons") [t1, t2]
+
+int :: Parser Term
+int = mkPeano <$> natural haskell
+  where
+    mkPeano :: Integer -> Term
+    mkPeano 0 = TAtom $ Atom "o"
+    mkPeano n = TComp $ Compound (Atom "s") [mkPeano (n-1)]
+
 query :: Parser Query
 query = Query <$> (compound <* spChar '?')
 
@@ -85,6 +104,8 @@ rule = Rule <$> rhead <*> rbody
 term :: Parser Term
 term = choice
     [ TComp <$> try compound
+    , try list
+    , try int
     , TAtom <$> try atom
     , TVar <$> try var
     ]
