@@ -4,7 +4,6 @@ module Parser
   , query
   , rule
   , toplevel
-  , queryOrRule
   , Toplevel(..)
   , Cmd(..)
   , parse
@@ -35,7 +34,7 @@ spChar :: Char -> Parser Char
 spChar c = char c <* spaces
 
 atomRest :: Parser String
-atomRest = many $ oneOf $ concat [ ['a'..'z'], ['0'..'9'], "-_'" ]
+atomRest = many $ oneOf $ concat [ ['a'..'z'], ['A'..'Z'], ['0'..'9'], "-_'" ]
 
 parens :: Parser a -> Parser a
 parens p = do
@@ -51,7 +50,7 @@ listOf p = sepBy (p <* spaces) (spChar ',')
 
 atom :: Parser Atom
 atom = do
-    f <- oneOf ['a'..'z']
+    f <- oneOf $ '#' : ['a'..'z']
     r <- atomRest
     spaces
     return $ Atom (f:r)
@@ -151,7 +150,5 @@ toplevel = spaces >> choice
   , TRule <$> rule
   ]
 
-queryOrRule :: Parser (Either Query Rule)
-queryOrRule = liftM Left (try query) <|> liftM Right rule
 parse :: Parser a -> SourceName -> String -> Either ParseError a
 parse = flip runParser $ 0

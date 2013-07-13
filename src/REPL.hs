@@ -6,7 +6,7 @@ import           Parser
 import           Print
 import           Types
 
-import           Text.Parsec         (many, parse)
+import           Text.Parsec         (many)
 
 import           Control.Monad.Error
 import           Control.Monad.State
@@ -64,16 +64,19 @@ loadFileFromHandle handle = do
 
 loadFileFromString :: String -> Manti ()
 loadFileFromString s =
-    case parse (many queryOrRule) "string" s of
+    case parse (many toplevel) "string" s of
       Left parseError -> liftIO $ print parseError
-      Right stats ->
+      Right stats -> do
         forM_ stats $ \stat ->
           case stat of
-            Right rule' -> runRule rule'
-            Left query' -> do
+            TRule rule' -> runRule rule'
+            TQuery query' -> do
               let qvars = vars query'
               r <- solve [query']
               liftIO . putStrLn $ printResults r qvars
+            TCmd Edit -> liftIO $ putStrLn "Warning: Edit command in files are ignored."
+            TCmd (Load filePath) -> runFile filePath
+        liftIO $ putStrLn s
 
 manti :: Manti a -> IO (Either MantiError a)
 manti m = evalStateT (runVarGenT (runErrorT (evalStateT (runManti m) defaultMantiState))) 0
