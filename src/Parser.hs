@@ -131,7 +131,7 @@ data Toplevel
 
 data Cmd
     = Edit
-    | Load FilePath
+    | Load [FilePath]
     deriving Show
 
 cmd :: Parser Cmd
@@ -141,7 +141,7 @@ editCmd :: Parser Cmd
 editCmd = spStr "edit" >> return Edit
 
 loadCmd :: Parser Cmd
-loadCmd = spStr "load" >> Load <$> many1 (noneOf "\n")
+loadCmd = spStr "load" >> Load <$> many1 (noneOf "\n ") `sepBy` (many $ char ' ')
 
 toplevel :: Parser Toplevel
 toplevel = spaces >> choice

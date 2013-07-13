@@ -15,11 +15,6 @@ import           System.Directory    (getTemporaryDirectory, removeFile)
 import           System.IO
 
 
-runFile :: FilePath -> Manti ()
-runFile path = do
-    contents <- liftIO $ readFile path
-    loadFileFromString contents
-
 repl :: Manti ()
 repl = do
     liftIO $ putStr "?- "
@@ -34,7 +29,9 @@ repl = do
         liftIO . putStrLn $ printResults r qvars
         repl
       Right (TCmd Edit) -> edit >> repl
-      Right (TCmd (Load filePath)) -> runFile filePath >> repl
+      Right (TCmd (Load files)) -> do
+        put defaultMantiState
+        mapM_ runFile files >> repl
 
 runRule :: Rule -> Manti ()
 runRule r = addRule (generalize r)
@@ -56,6 +53,11 @@ edit = do
       hClose handle
       removeFile path
 
+runFile :: FilePath -> Manti ()
+runFile path = do
+    contents <- liftIO $ readFile path
+    loadFileFromString contents
+
 loadFileFromHandle :: Handle -> Manti ()
 loadFileFromHandle handle = do
     contents <- liftIO $ hGetContents handle
@@ -75,7 +77,7 @@ loadFileFromString s =
               r <- solve [query']
               liftIO . putStrLn $ printResults r qvars
             TCmd Edit -> liftIO $ putStrLn "Warning: Edit command in files are ignored."
-            TCmd (Load filePath) -> runFile filePath
+            TCmd (Load files) -> mapM_ runFile files
         liftIO $ putStrLn s
 
 manti :: Manti a -> IO (Either MantiError a)
