@@ -54,4 +54,4 @@ instance PPrint (M.Map Var Term) where
 
 printResults :: [Substs] -> S.Set Var -> String
 printResults [] _ = "false"
-printResults r vs = pprint $ map (varSubsts vs) r
+printResults r vs = (pprint $ filter (not . M.null) $ map (varSubsts vs) r) ++ "\ntrue"
