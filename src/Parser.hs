@@ -7,20 +7,26 @@ module Parser
   , queryOrRule
   , Toplevel(..)
   , Cmd(..)
+  , parse
   ) where
 
-import           Text.Parsec
-import           Text.Parsec.String
+import           Text.Parsec          as P hiding (spaces, parse)
 import           Text.Parsec.Language (haskell)
 import           Text.Parsec.Token    (natural)
 
-import           Control.Applicative ((<$>), (<*), (<*>))
-import           Control.Monad       (liftM)
+import           Control.Applicative  ((<$>), (<*), (<*>))
+import           Control.Monad        (void)
 
 import           Types
 
+
+type Parser = Parsec String Int
+
 -- Helpers
 -- -------------------------------------------------------------------
+
+spaces :: Parser ()
+spaces = skipMany (void space <|> (char '%' >> skipMany (noneOf "\n")))
 
 spStr :: String -> Parser String
 spStr s = string s <* spaces
@@ -50,12 +56,20 @@ atom = do
     spaces
     return $ Atom (f:r)
 
-var :: Parser Var
-var = do
-    f <- oneOf ['A'..'Z']
+var, namedVar, annonVar :: Parser Var
+var = namedVar <|> annonVar
+
+namedVar = do
+    f <- oneOf $ ['A'..'Z']
     r <- atomRest
     spaces
     return $ Var (f:r)
+
+annonVar = do
+    spChar '_'
+    lastIdx <- getState
+    putState $ lastIdx + 1
+    return (Var $ "##" ++ show lastIdx)
 
 compound :: Parser Compound
 compound = do
@@ -107,7 +121,7 @@ term = choice
     , try list
     , try int
     , TAtom <$> try atom
-    , TVar <$> try var
+    , TVar  <$> try var
     ]
 
 data Toplevel
@@ -139,3 +153,5 @@ toplevel = spaces >> choice
 
 queryOrRule :: Parser (Either Query Rule)
 queryOrRule = liftM Left (try query) <|> liftM Right rule
+parse :: Parser a -> SourceName -> String -> Either ParseError a
+parse = flip runParser $ 0
