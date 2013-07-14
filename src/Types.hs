@@ -49,14 +49,20 @@ instance HasVar Query where
 newtype VarGenT m a = VarGenT { runVarGenT :: StateT Int m a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadTrans, MonadIO)
 
-data MantiState = MantiState { rules :: [ Rule ], lastVar :: Int }
-    deriving Show
+data MantiState = MantiState
+    { rules :: [ Rule ]
+    , lastVar :: Int
+    , loadedModules :: [ String ]
+    } deriving Show
 
 defaultMantiState :: MantiState
-defaultMantiState = MantiState{ rules = [oneTrueRule], lastVar = 0 }
+defaultMantiState = MantiState{ rules = [oneTrueRule], lastVar = 0, loadedModules = [] }
   where
     oneTrueRule :: Rule
     oneTrueRule = Rule (RHead (Atom "true") []) (RBody [])
+
+addModule :: String -> MantiState -> MantiState
+addModule m s = s{loadedModules = m:loadedModules s}
 
 newtype Manti a = Manti { runManti :: StateT MantiState (ErrorT MantiError (VarGenT IO)) a }
     deriving (Functor, Applicative, Monad, MonadState MantiState, MonadError MantiError, MonadIO)

@@ -6,13 +6,12 @@ import           Parser
 import           Print
 import           Types
 
-import           Text.Parsec         (many)
-
 import           Control.Monad.Error
 import           Control.Monad.State
 import           System.Cmd          (system)
 import           System.Directory    (getTemporaryDirectory, removeFile)
 import           System.IO
+import           Text.Parsec         (many)
 
 
 repl :: Manti ()
@@ -21,20 +20,25 @@ repl = do
     liftIO $ hFlush stdout
     input <- liftIO getLine
     case parse toplevel "repl" input of
-      Left parseError -> liftIO (print parseError) >> repl
-      Right (TRule rule') -> runRule rule' >> repl
-      Right (TQuery query') -> do
-        let qvars = vars query'
-        r <- solve [query']
-        liftIO . putStrLn $ printResults r qvars
-        repl
-      Right (TCmd Edit) -> edit >> repl
-      Right (TCmd (Load files)) -> do
-        put defaultMantiState
-        mapM_ runFile files >> repl
+      Left parseError       -> liftIO (print parseError) >> repl
+      Right (TRule rule')   -> runRule rule' >> repl
+      Right (TQuery query') -> runQuery query' >> repl
+      Right (TCmd cmd)      -> runCmd cmd >> repl
 
 runRule :: Rule -> Manti ()
 runRule r = addRule (generalize r)
+
+runCmd :: Cmd -> Manti ()
+runCmd Edit = edit
+runCmd (Load files) = do
+    put defaultMantiState
+    mapM_ runFile files
+
+runQuery :: Query -> Manti ()
+runQuery query' = do
+    let qvars = vars query'
+    r <- solve [query']
+    liftIO . putStrLn $ printResults r qvars
 
 edit :: Manti ()
 edit = do
@@ -55,8 +59,12 @@ edit = do
 
 runFile :: FilePath -> Manti ()
 runFile path = do
-    contents <- liftIO $ readFile path
-    loadFileFromString contents
+    modules <- gets loadedModules
+    unless (path `elem` modules) $ do
+      liftIO $ putStrLn $ "loading file: " ++ show path
+      contents <- liftIO $ readFile path
+      loadFileFromString contents
+      modify (addModule path)
 
 loadFileFromHandle :: Handle -> Manti ()
 loadFileFromHandle handle = do
@@ -71,13 +79,10 @@ loadFileFromString s =
       Right stats -> do
         forM_ stats $ \stat ->
           case stat of
-            TRule rule' -> runRule rule'
-            TQuery query' -> do
-              let qvars = vars query'
-              r <- solve [query']
-              liftIO . putStrLn $ printResults r qvars
-            TCmd Edit -> liftIO $ putStrLn "Warning: Edit command in files are ignored."
-            TCmd (Load files) -> mapM_ runFile files
+            TRule rule'       -> runRule rule'
+            TQuery query'     -> runQuery query'
+            TCmd Edit         -> liftIO $ putStrLn "Warning: Edit command in files are ignored."
+            TCmd (Load files) -> runCmd (Load files)
         liftIO $ putStrLn s
 
 manti :: Manti a -> IO (Either MantiError a)
