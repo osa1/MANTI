@@ -34,6 +34,15 @@ getMatchingRules (Compound fName args) = do
 
 solve :: [Query] -> Manti [Substs]
 solve [] = return [nullSubst]
+solve goals@(Query (Compound (Atom "not") [arg]):gs) =
+    case arg of
+      TComp comp -> do
+        ss <- solve [Query comp]
+        --trace ("ss in `not': " ++ show ss) (return ())
+        if null ss
+          then solve gs
+          else return []
+      term -> error $ "not arg is not compound: " ++ show term
 solve goals = do
     bs <- branch goals
     --trace ("bs: " ++ show bs) (return ())
