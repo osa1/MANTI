@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
+{-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind -fno-warn-name-shadowing #-}
 module Parser
   ( term
   , query
@@ -81,8 +81,12 @@ list :: Parser Term
 list = do
     spChar '['
     terms <- term `sepBy` spChar ','
+    tail  <- optionMaybe (spChar '|' >> term)
     spChar ']'
-    return $ foldr mkList (TAtom $ Atom "nil") terms
+    let t = case tail of
+              Nothing -> TAtom $ Atom "nil"
+              Just tl -> tl
+    return $ foldr mkList t terms
   where
     mkList :: Term -> Term -> Term
     mkList t1 t2 = TComp $ Compound (Atom "#cons") [t1, t2]
