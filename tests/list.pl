@@ -1,5 +1,9 @@
-member(A, #cons(A, _)).
-member(A, #cons(_, Rest)) :- member(A, Rest).
+member(A, [A|_]).
+member(A, [_|Rest]) :- member(A, Rest).
 
-concat(nil, A, A).
-concat(#cons(H, T), L, #cons(H, R1)) :- concat(T, L, R1).
+append([], A, A).
+append([H|T], L, [H|R1]) :- append(T, L, R1).
+
+% remove one occurance of X from list
+select(X, [X|Xs], Xs).
+select(X, [Y|Ys], [Y|Zs]) :- select(X, Ys, Zs).
