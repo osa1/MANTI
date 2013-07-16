@@ -1,5 +1,7 @@
 :load peano.pl list.pl
 
+% http://en.wikipedia.org/wiki/Zebra_Puzzle
+
 % one improvement here might be making mutually exclusive choices,
 % this should replace `member` with `choiceExclusive` etc.
 
@@ -63,11 +65,3 @@ solve(DrinksWater, OwnsZebra) :-
     % Answers
     member([_, DrinksWater, _, _, _, water], World),
     member([_, OwnsZebra, _, zebra, _, _], World).
-
-smallWorld( [ [1, _], [2, _], [3, _] ] ).
-
-solveSmall() :-
-    smallWorld(World),
-    member([_, ok], World),
-    member([_, nop], World),
-    member([_, woo], World).
