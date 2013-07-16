@@ -5,6 +5,7 @@ import           Types
 import           Unify
 
 import           Control.Monad       (forM, liftM)
+import           Control.Monad.Error (strMsg, throwError)
 import           Control.Monad.State (gets)
 import           Data.Maybe          (catMaybes)
 
@@ -39,10 +40,8 @@ solve (Query (Compound (Atom "not") [arg]):gs) =
       TComp comp -> do
         ss <- solve [Query comp]
         --trace ("ss in `not': " ++ show ss) (return ())
-        if null ss
-          then solve gs
-          else return []
-      term -> error $ "not arg is not compound: " ++ show term
+        if null ss then solve gs else return []
+      term -> throwError . strMsg $ "not arg is not compound: " ++ show term
 solve goals = do
     bs <- branch goals
     --trace ("bs: " ++ show bs) (return ())
