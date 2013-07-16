@@ -17,7 +17,7 @@ executable MANTI
   ghc-options:       -O2
   -- other-modules:
   build-depends:       base ==4.6.*
-                     , HUnit ==1.2.*
+                     --, HUnit ==1.2.*
                      , containers ==0.5.*
                      , mtl ==2.1.*
                      , parsec ==3.1.*
