@@ -6,6 +6,7 @@ import           Parser
 import           Print
 import           Types
 
+import           Control.Exception   (try)
 import           Control.Monad.Error
 import           Control.Monad.State
 import           System.Cmd          (system)
@@ -21,9 +22,11 @@ repl = do
     input <- liftIO getLine
     case parse toplevel "repl" input of
       Left parseError       -> liftIO (print parseError) >> repl
-      Right (TRule rule')   -> runRule rule' >> repl
-      Right (TQuery query') -> runQuery query' >> repl
-      Right (TCmd cmd)      -> runCmd cmd >> repl
+      Right (TRule rule')   -> runRule rule' `withError` repl
+      Right (TQuery query') -> runQuery query' `withError` repl
+      Right (TCmd cmd)      -> runCmd cmd `withError` repl
+  where
+    withError a b = catchError a (\err -> liftIO $ print err) >> b
 
 runRule :: Rule -> Manti ()
 runRule r = addRule (generalize r)
@@ -62,9 +65,12 @@ runFile path = do
     modules <- gets loadedModules
     unless (path `elem` modules) $ do
       liftIO $ putStrLn $ "loading file: " ++ show path
-      contents <- liftIO $ readFile path
-      loadFileFromString contents
-      modify (addModule path)
+      contents <- liftIO $ try (readFile path)
+      case contents of
+        Left ioerr -> throwError $ IOError ioerr
+        Right str  -> do
+          loadFileFromString str
+          modify (addModule path)
 
 loadFileFromHandle :: Handle -> Manti ()
 loadFileFromHandle handle = do

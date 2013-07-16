@@ -68,8 +68,8 @@ newtype Manti a = Manti { runManti :: StateT MantiState (ErrorT MantiError (VarG
 data MantiError
     = ErrMsg String
     | UnificationError Term Term
-    | UndefinedRule Atom Int
     | OccursCheck
+    | IOError IOError
     deriving (Show, Eq)
 
 instance Error MantiError where
