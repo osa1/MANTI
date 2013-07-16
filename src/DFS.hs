@@ -4,9 +4,9 @@ module DFS where
 import           Types
 import           Unify
 
-import           Control.Monad
+import           Control.Monad       (forM, liftM)
 import           Control.Monad.State (gets)
-import           Data.Maybe
+import           Data.Maybe          (catMaybes)
 
 --import Debug.Trace
 
@@ -34,7 +34,7 @@ getMatchingRules (Compound fName args) = do
 
 solve :: [Query] -> Manti [Substs]
 solve [] = return [nullSubst]
-solve goals@(Query (Compound (Atom "not") [arg]):gs) =
+solve (Query (Compound (Atom "not") [arg]):gs) =
     case arg of
       TComp comp -> do
         ss <- solve [Query comp]

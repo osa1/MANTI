@@ -19,8 +19,6 @@ newtype Atom = Atom String deriving (Show, Eq, Ord)
 newtype Var  = Var  String deriving (Show, Eq, Ord)
 data Compound = Compound Atom [Term] deriving (Show, Eq)
 
--- how to implement foldable instance for Term?
--- it's mutually recursive structure(with compound) makes it harder
 data Term
     = TAtom Atom
     | TVar Var
