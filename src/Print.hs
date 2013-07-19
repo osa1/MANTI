@@ -4,11 +4,11 @@
 module Print where
 
 import           Types
-import           Unify     (varSubsts, Substs)
+import           Unify           (Substs, varSubsts)
 
 import           Data.List
-import qualified Data.Map  as M
-import qualified Data.Set  as S
+import qualified Data.Map.Strict as M
+import qualified Data.Set        as S
 
 
 class PPrint a where
@@ -47,7 +47,7 @@ instance PPrint Compound where
       concat [ pprint fName, "(", intercalate ", " (map pprint args), ")" ]
 
 instance PPrint (M.Map Var Term) where
-    pprint = intercalate ", " . M.foldWithKey foldfn []
+    pprint = intercalate ", " . M.foldrWithKey foldfn []
       where
         foldfn :: Var -> Term -> [String] -> [String]
         foldfn var term acc = acc ++ [ concat [ pprint var, " -> ", pprint term ] ]

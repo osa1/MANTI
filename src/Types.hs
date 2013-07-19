@@ -4,9 +4,9 @@ module Types where
 
 import           Control.Applicative
 import           Control.Monad.Error
-import           Control.Monad.State
-import qualified Data.Map            as M
-import qualified Data.Set            as S
+import           Control.Monad.State.Strict
+import qualified Data.Map.Strict            as M
+import qualified Data.Set                   as S
 
 
 data Rule  = Rule RHead RBody  deriving Show
@@ -48,8 +48,8 @@ newtype VarGenT m a = VarGenT { runVarGenT :: StateT Int m a }
     deriving (Functor, Applicative, Monad, MonadState Int, MonadTrans, MonadIO)
 
 data MantiState = MantiState
-    { rules :: [ Rule ]
-    , lastVar :: Int
+    { rules         :: [ Rule ]
+    , lastVar       :: Int
     , loadedModules :: [ String ]
     } deriving Show
 

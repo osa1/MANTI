@@ -6,13 +6,13 @@ import           Parser
 import           Print
 import           Types
 
-import           Control.Exception   (try)
+import           Control.Exception          (try)
 import           Control.Monad.Error
-import           Control.Monad.State
-import           System.Cmd          (system)
-import           System.Directory    (getTemporaryDirectory, removeFile)
+import           Control.Monad.State.Strict
+import           System.Cmd                 (system)
+import           System.Directory           (getTemporaryDirectory, removeFile)
 import           System.IO
-import           Text.Parsec         (many)
+import           Text.Parsec                (many)
 
 
 repl :: Manti ()

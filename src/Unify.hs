@@ -15,7 +15,7 @@ import           Types
 
 import           Control.Monad.Error
 import           Control.Monad.Identity
-import qualified Data.Map               as M
+import qualified Data.Map.Strict        as M
 import qualified Data.Set               as S
 
 
